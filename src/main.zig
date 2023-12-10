@@ -2,7 +2,6 @@ const std = @import("std");
 const socket = std.os.socket;
 
 pub fn main() !void {
-    std.debug.print("Hello world!", .{});
     try httpServer("127.0.0.1", 8080);
 }
 
@@ -11,9 +10,7 @@ const server = std.http.Server;
 fn httpServer(address: []const u8, port: u16) !void {
     var parsed_address = try std.net.Address.parseIp4(address, port);
 
-    var server_socket = std.net.StreamServer.init(.{
-        .reuse_address = true,
-    });
+    var server_socket = std.net.StreamServer.init(.{});
     defer server_socket.deinit();
 
     try server_socket.listen(parsed_address);
@@ -26,5 +23,7 @@ fn httpServer(address: []const u8, port: u16) !void {
         var buffer: [1024]u8 = undefined;
         const bytes_read = try client_socket.stream.read(&buffer);
         std.debug.print("Received: {s}\n", .{buffer[0..bytes_read]});
+
+        try client_socket.stream.writeAll("Response from server!");
     }
 }

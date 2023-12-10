@@ -11,16 +11,24 @@ pub fn main() !void {
     const client_socket = try std.net.tcpConnectToAddress(address);
     defer client_socket.close();
 
-    // Connect to the server
+    // Get command line arguments
+    const args = std.os.argv;
+    if (args.len < 2) {
+        std.debug.print("Usage: send <message>\n", .{});
+        return;
+    }
+    var message = args[1];
+
+    // Calculate the length of the string (excluding the null-terminator)
+    const length = std.mem.len(message);
+
+    // Create a slice from the pointer
+    const slice = message[0..length];
 
     // Send a message
-    const message = "Hello, Zig Server!";
-    try client_socket.writeAll(message);
+    try client_socket.writeAll(slice);
+    var buffer: [1024]u8 = undefined;
 
-    std.debug.print("SENT", .{});
-
-    // Optionally, receive a response (if your server sends a response)
-    // var response: [1024]u8 = undefined;
-    // const bytes_read = try connection.stream.read(&response);
-    // std.debug.print("Received: {s}\n", .{response[0..bytes_read]});
+    const bytes_read = try client_socket.read(&buffer);
+    std.debug.print("Received: {s}\n", .{buffer[0..bytes_read]});
 }
